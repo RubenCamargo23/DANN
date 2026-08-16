@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - develop
+      - main
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
@@ -17,7 +18,7 @@ permissions:
 
 jobs:
   unittest-users_app:
-    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
+    if: (github.event_name == 'push' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify users_app
     strategy:
@@ -36,7 +37,7 @@ jobs:
         run: make unittest DIR=users_app
 
   unittest-routes_app:
-    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
+    if: (github.event_name == 'push' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify routes_app
     strategy:
@@ -55,7 +56,7 @@ jobs:
         run: make unittest DIR=routes_app
 
   unittest-posts_app:
-    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
+    if: (github.event_name == 'push' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify posts_app
     strategy:
@@ -74,7 +75,7 @@ jobs:
         run: make unittest DIR=posts_app
 
   unittest-offers_app:
-    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
+    if: (github.event_name == 'push' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify offers_app
     strategy:
@@ -144,7 +145,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 
   tag-sync-cleanup:
-    name: Tag, analyze main, sync develop and delete release branch
+    name: Tag, sync develop and delete release branch
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
     steps:
@@ -170,6 +171,26 @@ jobs:
         run: |
           git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
           git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: Sync develop with main (merge-back)
+        run: |
+          git fetch origin develop
+          git checkout develop
+          git merge origin/main --no-edit -m "chore: sync develop with main after v${{ steps.version.outputs.version }} [github-actions[bot]]"
+          git push origin develop
+
+      - name: Delete temporary release branch
+        run: |
+          git push origin --delete "${{ github.event.pull_request.head.ref }}"
+
+  sonarcloud-main:
+    name: SonarCloud Analysis (main)
+    if: github.event_name == 'push' && github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -210,18 +231,3 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
-          GITHUB_EVENT_NAME: push
-          GITHUB_HEAD_REF: ""
-          GITHUB_BASE_REF: ""
-          GITHUB_REF: refs/heads/main
-
-      - name: Sync develop with main (merge-back)
-        run: |
-          git fetch origin develop
-          git checkout develop
-          git merge origin/main --no-edit -m "chore: sync develop with main after v${{ steps.version.outputs.version }} [github-actions[bot]]"
-          git push origin develop
-
-      - name: Delete temporary release branch
-        run: |
-          git push origin --delete "${{ github.event.pull_request.head.ref }}"
