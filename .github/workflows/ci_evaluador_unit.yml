@@ -92,55 +92,6 @@ jobs:
       - name: Run unit tests
         run: make unittest DIR=offers_app
 
-  sonarcloud:
-    name: SonarCloud Analysis
-    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Set up Poetry
-        uses: abatilo/actions-poetry@v3
-        with:
-          poetry-version: 2.1.1
-
-      - name: Run tests with coverage (users_app)
-        working-directory: users_app
-        run: |
-          poetry install --no-interaction --no-ansi
-          poetry run pytest --cov=src --cov-report=xml:coverage.xml
-
-      - name: Run tests with coverage (routes_app)
-        working-directory: routes_app
-        run: |
-          poetry install --no-interaction --no-ansi
-          poetry run pytest --cov=src --cov-report=xml:coverage.xml
-
-      - name: Run tests with coverage (posts_app)
-        working-directory: posts_app
-        run: |
-          poetry install --no-interaction --no-ansi
-          poetry run pytest --cov=src --cov-report=xml:coverage.xml
-
-      - name: Run tests with coverage (offers_app)
-        working-directory: offers_app
-        run: |
-          poetry install --no-interaction --no-ansi
-          poetry run pytest --cov=src --cov-report=xml:coverage.xml
-
-      - name: SonarQube Cloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
-
   release-develop:
     name: Create release branch and PR
     needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app]
@@ -193,7 +144,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 
   tag-sync-cleanup:
-    name: Tag, sync develop and delete release branch
+    name: Tag, analyze main, sync develop and delete release branch
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
     steps:
@@ -219,6 +170,46 @@ jobs:
         run: |
           git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
           git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: 2.1.1
+
+      - name: Run tests with coverage (users_app)
+        working-directory: users_app
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry run pytest --cov=src --cov-report=xml:coverage.xml
+
+      - name: Run tests with coverage (routes_app)
+        working-directory: routes_app
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry run pytest --cov=src --cov-report=xml:coverage.xml
+
+      - name: Run tests with coverage (posts_app)
+        working-directory: posts_app
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry run pytest --cov=src --cov-report=xml:coverage.xml
+
+      - name: Run tests with coverage (offers_app)
+        working-directory: offers_app
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry run pytest --cov=src --cov-report=xml:coverage.xml
+
+      - name: SonarQube Cloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
       - name: Sync develop with main (merge-back)
         run: |
