@@ -161,13 +161,15 @@ jobs:
             exit 1
           fi
 
-          analysis_id=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-            "https://sonarcloud.io/api/ce/task?id=${ce_task_id}" | \
-            python3 -c "import sys, json; print(json.load(sys.stdin)['task']['analysisId'])")
+          ce_task_response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "https://sonarcloud.io/api/ce/task?id=${ce_task_id}")
+          echo "CE task response: $ce_task_response"
+          analysis_id=$(echo "$ce_task_response" | python3 -c "import sys, json; print(json.load(sys.stdin)['task']['analysisId'])")
 
-          gate_status=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=${analysis_id}" | \
-            python3 -c "import sys, json; print(json.load(sys.stdin)['projectStatus']['status'])")
+          gate_response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=${analysis_id}")
+          echo "Quality Gate response: $gate_response"
+          gate_status=$(echo "$gate_response" | python3 -c "import sys, json; print(json.load(sys.stdin)['projectStatus']['status'])")
 
           echo "Quality Gate status: $gate_status"
           if [ "$gate_status" != "OK" ]; then
