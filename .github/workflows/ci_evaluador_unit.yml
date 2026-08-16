@@ -176,8 +176,8 @@ jobs:
         run: |
           git fetch origin develop
           git checkout develop
-          git merge origin/main --no-edit -m "chore: sync develop with main after v${{ steps.version.outputs.version }} [github-actions[bot]]"
-          git push origin develop
+          git reset --hard origin/main
+          git push origin develop --force-with-lease
 
       - name: Delete temporary release branch
         run: |
