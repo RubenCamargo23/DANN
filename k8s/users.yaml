@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-db
+  namespace: default
+  labels:
+    app: users-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-db
+  template:
+    metadata:
+      labels:
+        app: users-db
+    spec:
+      containers:
+        - name: users-db
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: users_db
+          volumeMounts:
+            - name: users-db-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: users-db-storage
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-db
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: users-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: users-db-netpol
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: users-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: users-app
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-app
+  namespace: default
+  labels:
+    app: users-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-app
+  template:
+    metadata:
+      labels:
+        app: users-app
+    spec:
+      containers:
+        - name: users-app
+          image: users_app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_HOST
+              value: users-db
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: postgres
+            - name: DB_PASSWORD
+              value: postgres
+            - name: DB_NAME
+              value: users_db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-service
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    app: users-app
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30001

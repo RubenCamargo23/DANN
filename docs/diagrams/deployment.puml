@@ -1,0 +1,40 @@
+@startuml deployment
+title Vista de despliegue - Modelo de despliegue (Minikube)
+
+node "Cluster Minikube" {
+  node "Pod users-app" as usersapp
+  node "Pod users-db" as usersdb
+
+  node "Pod routes-app" as routesapp
+  node "Pod routes-db" as routesdb
+
+  node "Pod posts-app" as postsapp
+  node "Pod posts-db" as postsdb
+
+  node "Pod offers-app" as offersapp
+  node "Pod offers-db" as offersdb
+}
+
+usersapp --> usersdb : TCP 5432
+routesapp --> routesdb : TCP 5432
+postsapp --> postsdb : TCP 5432
+offersapp --> offersdb : TCP 5432
+
+usersapp -[hidden]-> routesapp
+routesapp -[hidden]-> postsapp
+postsapp -[hidden]-> offersapp
+
+note right of usersapp
+  Service tipo NodePort
+  expone el API REST
+  fuera del clúster
+end note
+
+note right of usersdb
+  Service tipo ClusterIP,
+  volumen emptyDir,
+  solo accesible desde
+  su aplicación dueña
+end note
+
+@enduml

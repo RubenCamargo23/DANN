@@ -1,0 +1,96 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Vista de despliegue - Modelo de red" id="networks">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="750" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Vista de despliegue - Modelo de red" style="text;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="1000" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns" value="Namespace: default" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="1000" height="380" as="geometry" />
+        </mxCell>
+
+        <!-- Red users -->
+        <mxCell id="netusers" value="Red users" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="100" width="200" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ua" value="users-app" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="100" y="140" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ud" value="users-db" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="100" y="210" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ua-ud" value="NetworkPolicy&#10;allow 5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="ua" target="ud">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Red routes -->
+        <mxCell id="netroutes" value="Red routes" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="100" width="200" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ra" value="routes-app" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="330" y="140" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="rd" value="routes-db" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="330" y="210" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ra-rd" value="NetworkPolicy&#10;allow 5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="ra" target="rd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Red posts -->
+        <mxCell id="netposts" value="Red posts" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="100" width="200" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="pa" value="posts-app" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="560" y="140" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pd" value="posts-db" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="560" y="210" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e-pa-pd" value="NetworkPolicy&#10;allow 5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="pa" target="pd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Red offers -->
+        <mxCell id="netoffers" value="Red offers" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="100" width="200" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="oa" value="offers-app" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="790" y="140" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="od" value="offers-db" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="790" y="210" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e-oa-od" value="NetworkPolicy&#10;allow 5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="oa" target="od">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- External cloud -->
+        <mxCell id="ext" value="Exterior del clúster" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="440" y="490" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-ext-ua" value="NodePort 30001" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;entryX=0.2;entryY=0;" edge="1" parent="1" source="ext" target="ua">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ext-ra" value="NodePort 30002" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;entryX=0.2;entryY=0;" edge="1" parent="1" source="ext" target="ra">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ext-pa" value="NodePort 30003" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;entryX=0.2;entryY=0;" edge="1" parent="1" source="ext" target="pa">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ext-oa" value="NodePort 30004" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;entryX=0.2;entryY=0;" edge="1" parent="1" source="ext" target="oa">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="note" value="Cada base de datos solo acepta tráfico entrante de su aplicación dueña. Las bases de datos son Service tipo ClusterIP (no accesibles desde fuera). Validado en la práctica con Calico como CNI de Minikube (ver VALIDACION.md)." style="text;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="70" y="600" width="890" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

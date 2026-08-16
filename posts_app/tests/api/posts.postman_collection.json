@@ -1,0 +1,182 @@
+{
+  "info": {
+    "name": "posts_app",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8003" },
+    { "key": "postId", "value": "" },
+    { "key": "routeId", "value": "route-1" },
+    { "key": "userId", "value": "user-1" }
+  ],
+  "item": [
+    {
+      "name": "Reset database",
+      "request": { "method": "POST", "url": "{{baseUrl}}/posts/reset" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Ping",
+      "request": { "method": "GET", "url": "{{baseUrl}}/posts/ping" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('body is pong', function () { pm.expect(pm.response.text()).to.include('pong'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create post",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/posts",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"routeId\": \"{{routeId}}\",\n  \"expireAt\": \"2027-01-01T10:00:00\",\n  \"userId\": \"{{userId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "pm.test('has id', function () { pm.expect(jsonData.id).to.exist; });",
+              "pm.collectionVariables.set('postId', jsonData.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create post - invalid expire date",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/posts",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"routeId\": \"{{routeId}}\",\n  \"expireAt\": \"2000-01-01T10:00:00\",\n  \"userId\": \"{{userId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 412', function () { pm.response.to.have.status(412); });"] }
+        }
+      ]
+    },
+    {
+      "name": "List posts",
+      "request": { "method": "GET", "url": "{{baseUrl}}/posts" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('is array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List posts - filter by route",
+      "request": { "method": "GET", "url": "{{baseUrl}}/posts?route={{routeId}}" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "List posts - filter by owner",
+      "request": { "method": "GET", "url": "{{baseUrl}}/posts?owner={{userId}}" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "List posts - filter by expire",
+      "request": { "method": "GET", "url": "{{baseUrl}}/posts?expire=false" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Get post by id",
+      "request": { "method": "GET", "url": "{{baseUrl}}/posts/{{postId}}" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Get post - not found",
+      "request": { "method": "GET", "url": "{{baseUrl}}/posts/does-not-exist" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 404', function () { pm.response.to.have.status(404); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Count posts",
+      "request": { "method": "GET", "url": "{{baseUrl}}/posts/count" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('count is a number', function () { pm.expect(pm.response.json().count).to.be.a('number'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete post",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/posts/{{postId}}" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Delete post - not found",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/posts/does-not-exist" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 404', function () { pm.response.to.have.status(404); });"] }
+        }
+      ]
+    }
+  ]
+}

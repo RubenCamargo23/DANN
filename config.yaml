@@ -1,0 +1,37 @@
+team:
+  name: <nombre del equipo>
+  members:
+    - user: <usuario uniandes>
+      percentage: 25
+    - user: <usuario uniandes>
+      percentage: 25
+    - user: <usuario uniandes>
+      percentage: 25
+    - user: <usuario uniandes>
+      percentage: 25
+board: <link al dashboard de tareas del equipo>
+docs: <link al github pages del equipo>
+users_app:
+  folder: users_app
+  image_name: users_app
+  image_tag: latest
+  authors:
+    - <usuario uniandes>
+posts_app:
+  folder: posts_app
+  image_name: posts_app
+  image_tag: latest
+  authors:
+    - <usuario uniandes>
+offers_app:
+  folder: offers_app
+  image_name: offers_app
+  image_tag: latest
+  authors:
+    - <usuario uniandes>
+routes_app:
+  folder: routes_app
+  image_name: routes_app
+  image_tag: latest
+  authors:
+    - <usuario uniandes>

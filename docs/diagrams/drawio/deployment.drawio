@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Vista de despliegue - Modelo de despliegue" id="deployment">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Vista de despliegue - Modelo de despliegue (Minikube)" style="text;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="1000" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cluster" value="Cluster Minikube (namespace: default)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="1000" height="500" as="geometry" />
+        </mxCell>
+
+        <!-- users pair -->
+        <mxCell id="usersapp" value="Pod&#10;users-app" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="90" y="120" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="usersdb" value="Pod&#10;users-db" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="90" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="TCP 5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="usersapp" target="usersdb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- routes pair -->
+        <mxCell id="routesapp" value="Pod&#10;routes-app" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="320" y="120" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="routesdb" value="Pod&#10;routes-db" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="320" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="TCP 5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="routesapp" target="routesdb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- posts pair -->
+        <mxCell id="postsapp" value="Pod&#10;posts-app" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="550" y="120" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="postsdb" value="Pod&#10;posts-db" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="550" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="TCP 5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="postsapp" target="postsdb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- offers pair -->
+        <mxCell id="offersapp" value="Pod&#10;offers-app" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="780" y="120" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="offersdb" value="Pod&#10;offers-db" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="780" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="TCP 5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="offersapp" target="offersdb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="note1" value="Service tipo NodePort expone el API REST fuera del clúster (uno por cada *-app)" style="text;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="90" y="340" width="420" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="note2" value="Service tipo ClusterIP, volumen emptyDir, solo accesible desde su aplicación dueña (uno por cada *-db)" style="text;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="550" y="340" width="420" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

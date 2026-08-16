@@ -1,0 +1,225 @@
+name: Evaluador Pruebas Unitarias
+# Actualice este pipeline si usted decide trabajar en una tecnología diferente a Python.
+#
+# Este workflow agrupa todo el CI/CD del equipo:
+#   - unittest-*      : pruebas unitarias por aplicación (obligatorio para el curso).
+#                        Corre en push/PR hacia main, develop y release/**.
+#   - sonarcloud       : análisis de calidad en SonarCloud. Disparo manual (workflow_dispatch),
+#                        eligiendo si se analiza develop o main.
+#   - open-release-pr  : al hacer push a una rama release/x.y.z, abre/actualiza un PR hacia main.
+#   - tag-and-sync     : al mergear ese PR a main, crea el tag vX.Y.Z y sincroniza develop con main.
+#
+# El release de GitHub con el nombre exacto que exige el enunciado (ProyectoPrimeraEntrega,
+# ProyectoSegundaEntrega, ProyectoTerceraEntrega) se sigue creando manualmente, apuntando
+# al tag que genera el job tag-and-sync.
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "release/**"
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+      - develop
+      - "release/**"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Rama a analizar con SonarCloud (develop o main)"
+        required: true
+        type: choice
+        options:
+          - develop
+          - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  unittest-users_app:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    name: Verify users_app
+    strategy:
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: 2.1.1
+      - name: Run unit tests
+        run: make unittest DIR=users_app
+
+  unittest-routes_app:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    name: Verify routes_app
+    strategy:
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: 2.1.1
+      - name: Run unit tests
+        run: make unittest DIR=routes_app
+
+  unittest-posts_app:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    name: Verify posts_app
+    strategy:
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: 2.1.1
+      - name: Run unit tests
+        run: make unittest DIR=posts_app
+
+  unittest-offers_app:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    name: Verify offers_app
+    strategy:
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: 2.1.1
+      - name: Run unit tests
+        run: make unittest DIR=offers_app
+
+  sonarcloud:
+    if: github.event_name == 'workflow_dispatch'
+    name: SonarCloud (${{ inputs.ref }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0 # necesario para que Sonar calcule el diff contra "Previous version"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: 2.1.1
+
+      - name: Run tests with coverage (users_app)
+        working-directory: users_app
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry run pytest --cov=src --cov-report=xml:coverage.xml
+
+      - name: Run tests with coverage (routes_app)
+        working-directory: routes_app
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry run pytest --cov=src --cov-report=xml:coverage.xml
+
+      - name: Run tests with coverage (posts_app)
+        working-directory: posts_app
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry run pytest --cov=src --cov-report=xml:coverage.xml
+
+      - name: Run tests with coverage (offers_app)
+        working-directory: offers_app
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry run pytest --cov=src --cov-report=xml:coverage.xml
+
+      - name: SonarQube Cloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  open-release-pr:
+    if: github.event_name == 'push' && startsWith(github.ref_name, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from branch name
+        id: version
+        run: |
+          branch="${GITHUB_REF#refs/heads/release/}"
+          echo "version=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update PR to main
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: ${{ github.ref_name }}
+          base: main
+          title: "Release ${{ steps.version.outputs.version }}"
+          body: |
+            PR automático de GitFlow: libera `${{ github.ref_name }}` hacia `main`.
+
+            Al mergear este PR:
+            - Se crea el tag `v${{ steps.version.outputs.version }}` en `main`.
+            - `develop` se sincroniza automáticamente con `main`.
+          labels: release
+
+  tag-and-sync-develop:
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Extract version from branch name
+        id: version
+        run: |
+          branch="${{ github.event.pull_request.head.ref }}"
+          version="${branch#release/}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Configure git as github-actions bot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: Sync develop with main (merge-back)
+        run: |
+          git fetch origin develop
+          git checkout develop
+          git merge origin/main --no-edit -m "chore: sync develop with main after v${{ steps.version.outputs.version }} [github-actions[bot]]"
+          git push origin develop

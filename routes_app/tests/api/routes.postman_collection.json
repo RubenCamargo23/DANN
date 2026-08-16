@@ -1,0 +1,238 @@
+{
+  "info": {
+    "name": "routes_app",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8002" },
+    { "key": "token", "value": "some-token" },
+    { "key": "routeId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Reset database",
+      "request": { "method": "POST", "url": "{{baseUrl}}/routes/reset" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Ping",
+      "request": { "method": "GET", "url": "{{baseUrl}}/routes/ping" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('body is pong', function () { pm.expect(pm.response.text()).to.include('pong'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create route - missing auth",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/routes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightId\": \"AA001\",\n  \"sourceAirportCode\": \"BOG\",\n  \"sourceCountry\": \"Colombia\",\n  \"destinyAirportCode\": \"MIA\",\n  \"destinyCountry\": \"USA\",\n  \"bagCost\": 50,\n  \"plannedStartDate\": \"2027-01-01T10:00:00\",\n  \"plannedEndDate\": \"2027-01-01T15:00:00\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 403', function () { pm.response.to.have.status(403); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Create route",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/routes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightId\": \"AA001\",\n  \"sourceAirportCode\": \"BOG\",\n  \"sourceCountry\": \"Colombia\",\n  \"destinyAirportCode\": \"MIA\",\n  \"destinyCountry\": \"USA\",\n  \"bagCost\": 50,\n  \"plannedStartDate\": \"2027-01-01T10:00:00\",\n  \"plannedEndDate\": \"2027-01-01T15:00:00\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "pm.test('has id', function () { pm.expect(jsonData.id).to.exist; });",
+              "pm.collectionVariables.set('routeId', jsonData.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create route - duplicate flight",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/routes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightId\": \"AA001\",\n  \"sourceAirportCode\": \"BOG\",\n  \"sourceCountry\": \"Colombia\",\n  \"destinyAirportCode\": \"MIA\",\n  \"destinyCountry\": \"USA\",\n  \"bagCost\": 50,\n  \"plannedStartDate\": \"2027-01-01T10:00:00\",\n  \"plannedEndDate\": \"2027-01-01T15:00:00\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 412', function () { pm.response.to.have.status(412); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Create route - invalid dates",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/routes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightId\": \"BB002\",\n  \"sourceAirportCode\": \"BOG\",\n  \"sourceCountry\": \"Colombia\",\n  \"destinyAirportCode\": \"MIA\",\n  \"destinyCountry\": \"USA\",\n  \"bagCost\": 50,\n  \"plannedStartDate\": \"2027-01-01T15:00:00\",\n  \"plannedEndDate\": \"2027-01-01T10:00:00\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 412', function () { pm.response.to.have.status(412); });"] }
+        }
+      ]
+    },
+    {
+      "name": "List routes",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/routes"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('is array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List routes - filter by flight",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/routes?flight=AA001"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get route by id",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/routes/{{routeId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get route - not found",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/routes/does-not-exist"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 404', function () { pm.response.to.have.status(404); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Count routes",
+      "request": { "method": "GET", "url": "{{baseUrl}}/routes/count" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('count is a number', function () { pm.expect(pm.response.json().count).to.be.a('number'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete route",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/routes/{{routeId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Delete route - not found",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/routes/does-not-exist"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 404', function () { pm.response.to.have.status(404); });"] }
+        }
+      ]
+    }
+  ]
+}

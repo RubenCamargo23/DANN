@@ -1,0 +1,190 @@
+{
+  "info": {
+    "name": "offers_app",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8004" },
+    { "key": "offerId", "value": "" },
+    { "key": "postId", "value": "post-1" },
+    { "key": "userId", "value": "user-1" }
+  ],
+  "item": [
+    {
+      "name": "Reset database",
+      "request": { "method": "POST", "url": "{{baseUrl}}/offers/reset" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Ping",
+      "request": { "method": "GET", "url": "{{baseUrl}}/offers/ping" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('body is pong', function () { pm.expect(pm.response.text()).to.include('pong'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create offer",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/offers",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"postId\": \"{{postId}}\",\n  \"userId\": \"{{userId}}\",\n  \"description\": \"Zapatos\",\n  \"size\": \"MEDIUM\",\n  \"fragile\": false,\n  \"offer\": 45.5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "pm.test('has id', function () { pm.expect(jsonData.id).to.exist; });",
+              "pm.collectionVariables.set('offerId', jsonData.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create offer - invalid size",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/offers",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"postId\": \"{{postId}}\",\n  \"userId\": \"{{userId}}\",\n  \"description\": \"Zapatos\",\n  \"size\": \"HUGE\",\n  \"fragile\": false,\n  \"offer\": 45.5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 412', function () { pm.response.to.have.status(412); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Create offer - negative amount",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/offers",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"postId\": \"{{postId}}\",\n  \"userId\": \"{{userId}}\",\n  \"description\": \"Zapatos\",\n  \"size\": \"MEDIUM\",\n  \"fragile\": false,\n  \"offer\": -10\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 412', function () { pm.response.to.have.status(412); });"] }
+        }
+      ]
+    },
+    {
+      "name": "List offers",
+      "request": { "method": "GET", "url": "{{baseUrl}}/offers" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('is array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List offers - filter by post",
+      "request": { "method": "GET", "url": "{{baseUrl}}/offers?post={{postId}}" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "List offers - filter by owner",
+      "request": { "method": "GET", "url": "{{baseUrl}}/offers?owner={{userId}}" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Get offer by id",
+      "request": { "method": "GET", "url": "{{baseUrl}}/offers/{{offerId}}" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Get offer - not found",
+      "request": { "method": "GET", "url": "{{baseUrl}}/offers/does-not-exist" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 404', function () { pm.response.to.have.status(404); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Count offers",
+      "request": { "method": "GET", "url": "{{baseUrl}}/offers/count" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('count is a number', function () { pm.expect(pm.response.json().count).to.be.a('number'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete offer",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/offers/{{offerId}}" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 200', function () { pm.response.to.have.status(200); });"] }
+        }
+      ]
+    },
+    {
+      "name": "Delete offer - not found",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/offers/does-not-exist" },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('status is 404', function () { pm.response.to.have.status(404); });"] }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+@startuml networks
+title Vista de despliegue - Modelo de red
+
+rectangle "Namespace: default" {
+  rectangle "Red users" {
+    [users-app] as ua
+    [users-db] as ud
+    ua --> ud : NetworkPolicy\nallow 5432
+  }
+
+  rectangle "Red routes" {
+    [routes-app] as ra
+    [routes-db] as rd
+    ra --> rd : NetworkPolicy\nallow 5432
+  }
+
+  rectangle "Red posts" {
+    [posts-app] as pa
+    [posts-db] as pd
+    pa --> pd : NetworkPolicy\nallow 5432
+  }
+
+  rectangle "Red offers" {
+    [offers-app] as oa
+    [offers-db] as od
+    oa --> od : NetworkPolicy\nallow 5432
+  }
+}
+
+cloud "Exterior del clúster" as ext
+
+ext --> ua : NodePort 30001
+ext --> ra : NodePort 30002
+ext --> pa : NodePort 30003
+ext --> oa : NodePort 30004
+
+note bottom
+  Cada base de datos solo acepta tráfico
+  entrante de su aplicación dueña.
+  Las bases de datos son Service tipo
+  ClusterIP (no accesibles desde fuera).
+end note
+
+@enduml

@@ -1,0 +1,242 @@
+{
+  "info": {
+    "name": "users_app",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8001" },
+    { "key": "userId", "value": "" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Reset database",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/users/reset"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ping",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/users/ping"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('body is pong', function () { pm.expect(pm.response.text()).to.include('pong'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create user",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/users",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"jdoe\",\n  \"password\": \"secret123\",\n  \"email\": \"jdoe@example.com\",\n  \"fullName\": \"John Doe\",\n  \"dni\": \"123456\",\n  \"phoneNumber\": \"3000000000\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "pm.test('has id', function () { pm.expect(jsonData.id).to.exist; });",
+              "pm.collectionVariables.set('userId', jsonData.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create user - duplicate",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/users",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"jdoe\",\n  \"password\": \"secret123\",\n  \"email\": \"jdoe@example.com\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 412', function () { pm.response.to.have.status(412); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authenticate",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/users/auth",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"jdoe\",\n  \"password\": \"secret123\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "var jsonData = pm.response.json();",
+              "pm.test('has token', function () { pm.expect(jsonData.token).to.exist; });",
+              "pm.collectionVariables.set('token', jsonData.token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authenticate - invalid credentials",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/users/auth",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"jdoe\",\n  \"password\": \"wrong-password\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 404', function () { pm.response.to.have.status(404); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get authenticated user",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/users/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "var jsonData = pm.response.json();",
+              "pm.test('username matches', function () { pm.expect(jsonData.username).to.eql('jdoe'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get authenticated user - missing header",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/users/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 403', function () { pm.response.to.have.status(403); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update user",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/users/{{userId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Jane Doe\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update user - not found",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/users/does-not-exist",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Jane Doe\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 404', function () { pm.response.to.have.status(404); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Count users",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/users/count"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "var jsonData = pm.response.json();",
+              "pm.test('count is a number', function () { pm.expect(jsonData.count).to.be.a('number'); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

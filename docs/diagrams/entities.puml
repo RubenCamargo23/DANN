@@ -1,0 +1,64 @@
+@startuml entities
+title Vista de información - Modelo de entidades
+
+entity "User" as user {
+  * id : string <<uuid>>
+  --
+  username : string
+  email : string
+  phoneNumber : string
+  dni : string
+  fullName : string
+  password : string
+  salt : string
+  token : string
+  status : string
+  expireAt : datetime
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+entity "Route" as route {
+  * id : string <<uuid>>
+  --
+  flightId : string
+  sourceAirportCode : string
+  sourceCountry : string
+  destinyAirportCode : string
+  destinyCountry : string
+  bagCost : integer
+  plannedStartDate : datetime
+  plannedEndDate : datetime
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+entity "Post" as post {
+  * id : string <<uuid>>
+  --
+  routeId : string
+  userId : string
+  expireAt : datetime
+  createdAt : datetime
+}
+
+entity "Offer" as offer {
+  * id : string <<uuid>>
+  --
+  postId : string
+  userId : string
+  description : string
+  size : string
+  fragile : boolean
+  offer : number
+  createdAt : datetime
+}
+
+note bottom of route
+  routeId referencia lógica a
+  Route.id (sin FK física:
+  cada entidad vive en su
+  propia base de datos)
+end note
+
+@enduml
