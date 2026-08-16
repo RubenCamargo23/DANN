@@ -13,6 +13,7 @@ Este documento describe, paso a paso y con los comandos reales, cómo se validó
 - [7. Despliegue y validación en Minikube (con NetworkPolicy real)](#7-despliegue-y-validación-en-minikube-con-networkpolicy-real)
 - [8. Validar el aislamiento de red entre aplicaciones](#8-validar-el-aislamiento-de-red-entre-aplicaciones)
 - [9. Limpieza](#9-limpieza)
+- [10. Lecciones del pipeline GitFlow + SonarCloud](#10-lecciones-del-pipeline-gitflow--sonarcloud)
 
 ## 1. Prerrequisitos
 
@@ -235,3 +236,11 @@ minikube stop
 # o para borrar el clúster por completo:
 minikube delete
 ```
+
+## 10. Lecciones del pipeline GitFlow + SonarCloud
+
+Al construir el flujo automático de release (`develop` → pruebas → `release/X.Y.Z` → PR → merge a `main` → tag → análisis → sync de `develop`), aparecieron varios problemas reales que vale la pena conocer si se modifica el workflow:
+
+- **SonarCloud Free no permite consultar el Quality Gate en ramas distintas a la principal.** Intentar bloquear el release con el resultado del Quality Gate de `develop` falla con `403` (`"Organization is not allowed to access data from non main branches"`). Por eso el análisis se movió a correr sobre `main`, después del merge, y ya no bloquea el release (es informativo).
+- **Loop infinito de releases.** El paso que sincroniza `develop` con `main` (`git push origin develop`) vuelve a disparar el trigger `on.push` del propio workflow, generando un release nuevo, cuyo merge sincroniza `develop` de nuevo, en un ciclo sin fin. Se corrigió agregando una condición al job `release-develop` que ignora los push cuyo mensaje de commit empiece con `"chore: sync develop with main"` (usar `contains()` con un texto genérico como `github-actions[bot]` es frágil: cualquier commit que *hable* sobre el bot en su descripción activa el bloqueo por accidente).
+- **Renombrar la Main Branch en SonarCloud no reprocesa el historial.** Si el proyecto se creó cuando la rama principal aún se llamaba `master`, renombrarla a `main` desde la configuración del proyecto deja el análisis "congelado" en el commit del rename — los scans posteriores exitosos no logran actualizarlo. La solución que funcionó fue borrar el proyecto en SonarCloud y crearlo de nuevo desde cero (nuevo `SONAR_TOKEN`, actualizado como secret `SONAR_TOKEN` en GitHub).
