@@ -1,4 +1,4 @@
-name: Evaluador Pruebas Unitarias
+name: Flujo de CI
 # Actualice este pipeline si usted decide trabajar en una tecnología diferente a Python.
 #
 # Este workflow agrupa todo el CI/CD del equipo:
