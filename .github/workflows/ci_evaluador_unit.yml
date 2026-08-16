@@ -210,6 +210,10 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
+          GITHUB_EVENT_NAME: push
+          GITHUB_HEAD_REF: ""
+          GITHUB_BASE_REF: ""
+          GITHUB_REF: refs/heads/main
 
       - name: Sync develop with main (merge-back)
         run: |
