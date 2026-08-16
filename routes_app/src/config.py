@@ -1,51 +1,16 @@
 import os
-from functools import lru_cache
 
 
 class Settings:
     """Application settings."""
 
-    @classmethod
-    @property
-    @lru_cache()
-    def app_name(cls) -> str:
-        return os.getenv("APP_NAME", "Routes API")
-
-    @classmethod
-    @property
-    @lru_cache()
-    def log_level(cls) -> str:
-        return os.getenv("LOG_LEVEL", "DEBUG")
-
-    @classmethod
-    @property
-    def db_host(cls) -> str:
-        return os.getenv("DB_HOST", "localhost")
-
-    @classmethod
-    @property
-    def db_port(cls) -> str:
-        return os.getenv("DB_PORT", "5432")
-
-    @classmethod
-    @property
-    def db_user(cls) -> str:
-        return os.getenv("DB_USER", "postgres")
-
-    @classmethod
-    @property
-    def db_password(cls) -> str:
-        return os.getenv("DB_PASSWORD", "postgres")
-
-    @classmethod
-    @property
-    def db_name(cls) -> str:
-        return os.getenv("DB_NAME", "routes_db")
-
-    @classmethod
-    @property
-    def database_url(cls) -> str:
-        return (
-            f"postgresql://{cls.db_user}:{cls.db_password}"
-            f"@{cls.db_host}:{cls.db_port}/{cls.db_name}"
-        )
+    app_name = os.getenv("APP_NAME", "Routes API")
+    log_level = os.getenv("LOG_LEVEL", "DEBUG")
+    db_host = os.getenv("DB_HOST", "localhost")
+    db_port = os.getenv("DB_PORT", "5432")
+    db_user = os.getenv("DB_USER", "postgres")
+    db_password = os.getenv("DB_PASSWORD", "postgres")
+    db_name = os.getenv("DB_NAME", "routes_db")
+    database_url = (
+        f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    )
