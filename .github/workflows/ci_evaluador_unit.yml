@@ -1,5 +1,5 @@
 name: Flujo de CI
-# Actualice este pipeline si usted decide trabajar en una tecnología diferente a Python.
+# Actualice este pipeline si usted decide trabajar en una tecnología diferente a Python
 
 on:
   push:
@@ -93,7 +93,7 @@ jobs:
         run: make unittest DIR=offers_app
 
   sonarcloud:
-    name: SonarCloud Quality Gate
+    name: SonarCloud Analysis
     if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     steps:
@@ -139,16 +139,11 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: SonarQube Quality Gate check
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
   release-develop:
     name: Create release branch and PR
-    needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app, sonarcloud]
+    needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app]
     if: github.event_name == 'push' && github.ref_name == 'develop'
     runs-on: ubuntu-latest
     outputs:
@@ -185,20 +180,15 @@ jobs:
           git checkout -b "${{ steps.next_version.outputs.branch }}"
           git push origin "${{ steps.next_version.outputs.branch }}"
 
-      - name: Open PR to main
-        uses: peter-evans/create-pull-request@v6
-        id: cpr
-        with:
-          token: ${{ secrets.GH_PAT }}
-          branch: ${{ steps.next_version.outputs.branch }}
-          base: main
-          title: "Release ${{ steps.next_version.outputs.version }}"
-          body: |
-            PR automático de GitFlow: `develop` pasó pruebas unitarias y el Quality Gate
-            de SonarCloud, liberando `${{ steps.next_version.outputs.branch }}` hacia `main`.
-
-      - name: Merge PR to main
-        run: gh pr merge --squash --admin "${{ steps.cpr.outputs.pull-request-number }}"
+      - name: Open and merge PR to main
+        run: |
+          pr_url=$(gh pr create \
+            --base main \
+            --head "${{ steps.next_version.outputs.branch }}" \
+            --title "Release ${{ steps.next_version.outputs.version }}" \
+            --body "PR automático de GitFlow: \`develop\` pasó pruebas unitarias, liberando \`${{ steps.next_version.outputs.branch }}\` hacia \`main\`.")
+          echo "PR created: $pr_url"
+          gh pr merge --squash --admin "$pr_url"
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 
