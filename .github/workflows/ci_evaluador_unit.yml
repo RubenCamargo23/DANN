@@ -1,39 +1,15 @@
 name: Flujo de CI
 # Actualice este pipeline si usted decide trabajar en una tecnología diferente a Python.
-#
-# Este workflow agrupa todo el CI/CD del equipo:
-#   - unittest-*      : pruebas unitarias por aplicación (obligatorio para el curso).
-#                        Corre en push/PR hacia main, develop y release/**.
-#   - sonarcloud       : análisis de calidad en SonarCloud. Disparo manual (workflow_dispatch),
-#                        eligiendo si se analiza develop o main.
-#   - open-release-pr  : al hacer push a una rama release/x.y.z, abre/actualiza un PR hacia main.
-#   - tag-and-sync     : al mergear ese PR a main, crea el tag vX.Y.Z y sincroniza develop con main.
-#
-# El release de GitHub con el nombre exacto que exige el enunciado (ProyectoPrimeraEntrega,
-# ProyectoSegundaEntrega, ProyectoTerceraEntrega) se sigue creando manualmente, apuntando
-# al tag que genera el job tag-and-sync.
 
 on:
   push:
     branches:
-      - main
       - develop
-      - "release/**"
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
-      - main
       - develop
-      - "release/**"
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Rama a analizar con SonarCloud (develop o main)"
-        required: true
-        type: choice
-        options:
-          - develop
-          - main
+      - main
 
 permissions:
   contents: write
@@ -41,7 +17,7 @@ permissions:
 
 jobs:
   unittest-users_app:
-    if: github.event_name != 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify users_app
     strategy:
@@ -60,7 +36,7 @@ jobs:
         run: make unittest DIR=users_app
 
   unittest-routes_app:
-    if: github.event_name != 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify routes_app
     strategy:
@@ -79,7 +55,7 @@ jobs:
         run: make unittest DIR=routes_app
 
   unittest-posts_app:
-    if: github.event_name != 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify posts_app
     strategy:
@@ -98,7 +74,7 @@ jobs:
         run: make unittest DIR=posts_app
 
   unittest-offers_app:
-    if: github.event_name != 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify offers_app
     strategy:
@@ -117,14 +93,13 @@ jobs:
         run: make unittest DIR=offers_app
 
   sonarcloud:
-    if: github.event_name == 'workflow_dispatch'
-    name: SonarCloud (${{ inputs.ref }})
+    name: SonarCloud Quality Gate
+    if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
-          fetch-depth: 0 # necesario para que Sonar calcule el diff contra "Previous version"
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -165,33 +140,70 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  open-release-pr:
-    if: github.event_name == 'push' && startsWith(github.ref_name, 'release/')
+      - name: SonarQube Quality Gate check
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  release-develop:
+    name: Create release branch and PR
+    needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app, sonarcloud]
+    if: github.event_name == 'push' && github.ref_name == 'develop'
     runs-on: ubuntu-latest
+    outputs:
+      release_branch: ${{ steps.next_version.outputs.branch }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Extract version from branch name
-        id: version
-        run: |
-          branch="${GITHUB_REF#refs/heads/release/}"
-          echo "version=$branch" >> "$GITHUB_OUTPUT"
-
-      - name: Open or update PR to main
-        uses: peter-evans/create-pull-request@v6
         with:
-          branch: ${{ github.ref_name }}
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Compute next patch version from latest tag
+        id: next_version
+        run: |
+          latest_tag=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          if [ -z "$latest_tag" ]; then
+            next="0.1.0"
+          else
+            version="${latest_tag#v}"
+            major=$(echo "$version" | cut -d. -f1)
+            minor=$(echo "$version" | cut -d. -f2)
+            patch=$(echo "$version" | cut -d. -f3)
+            next="${major}.${minor}.$((patch + 1))"
+          fi
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+          echo "branch=release/$next" >> "$GITHUB_OUTPUT"
+
+      - name: Configure git as github-actions bot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push release branch
+        run: |
+          git checkout -b "${{ steps.next_version.outputs.branch }}"
+          git push origin "${{ steps.next_version.outputs.branch }}"
+
+      - name: Open PR to main
+        uses: peter-evans/create-pull-request@v6
+        id: cpr
+        with:
+          token: ${{ secrets.GH_PAT }}
+          branch: ${{ steps.next_version.outputs.branch }}
           base: main
-          title: "Release ${{ steps.version.outputs.version }}"
+          title: "Release ${{ steps.next_version.outputs.version }}"
           body: |
-            PR automático de GitFlow: libera `${{ github.ref_name }}` hacia `main`.
+            PR automático de GitFlow: `develop` pasó pruebas unitarias y el Quality Gate
+            de SonarCloud, liberando `${{ steps.next_version.outputs.branch }}` hacia `main`.
 
-            Al mergear este PR:
-            - Se crea el tag `v${{ steps.version.outputs.version }}` en `main`.
-            - `develop` se sincroniza automáticamente con `main`.
-          labels: release
+      - name: Merge PR to main
+        run: gh pr merge --squash --admin "${{ steps.cpr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
 
-  tag-and-sync-develop:
+  tag-sync-cleanup:
+    name: Tag, sync develop and delete release branch
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
     steps:
@@ -199,6 +211,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: main
+          token: ${{ secrets.GH_PAT }}
 
       - name: Extract version from branch name
         id: version
@@ -223,3 +236,7 @@ jobs:
           git checkout develop
           git merge origin/main --no-edit -m "chore: sync develop with main after v${{ steps.version.outputs.version }} [github-actions[bot]]"
           git push origin develop
+
+      - name: Delete temporary release branch
+        run: |
+          git push origin --delete "${{ github.event.pull_request.head.ref }}"
