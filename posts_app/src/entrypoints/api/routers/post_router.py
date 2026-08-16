@@ -90,7 +90,13 @@ def list_posts(
     return [_serialize(p) for p in posts]
 
 
-@router.get("/{post_id}", responses={404: {"description": "Post not found"}})
+@router.get(
+    "/{post_id}",
+    responses={
+        400: {"description": "Invalid id format"},
+        404: {"description": "Post not found"},
+    },
+)
 def get_post(
     post_id: str, use_case: BaseUseCase = Depends(build_get_post_use_case)
 ):
@@ -103,7 +109,13 @@ def get_post(
     return _serialize(post)
 
 
-@router.delete("/{post_id}", responses={404: {"description": "Post not found"}})
+@router.delete(
+    "/{post_id}",
+    responses={
+        400: {"description": "Invalid id format"},
+        404: {"description": "Post not found"},
+    },
+)
 def delete_post(
     post_id: str, use_case: BaseUseCase = Depends(build_delete_post_use_case)
 ):
