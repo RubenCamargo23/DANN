@@ -95,7 +95,7 @@ jobs:
   release-develop:
     name: Create release branch and PR
     needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app]
-    if: github.event_name == 'push' && github.ref_name == 'develop'
+    if: "github.event_name == 'push' && github.ref_name == 'develop' && !startsWith(github.event.head_commit.message, 'chore: sync develop with main')"
     runs-on: ubuntu-latest
     outputs:
       release_branch: ${{ steps.next_version.outputs.branch }}
