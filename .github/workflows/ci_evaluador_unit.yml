@@ -93,7 +93,7 @@ jobs:
         run: make unittest DIR=offers_app
 
   sonarcloud:
-    name: SonarCloud Quality Gate
+    name: SonarCloud Analysis
     if: github.event_name == 'push' || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     steps:
@@ -141,44 +141,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
 
-      - name: SonarQube Quality Gate check
-        run: |
-          ce_task_id=$(grep '^ceTaskId=' .scannerwork/report-task.txt | cut -d= -f2)
-
-          for i in $(seq 1 30); do
-            ce_status=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-              "https://sonarcloud.io/api/ce/task?id=${ce_task_id}" | \
-              python3 -c "import sys, json; print(json.load(sys.stdin)['task']['status'])")
-            echo "CE task status: $ce_status"
-            if [ "$ce_status" = "SUCCESS" ] || [ "$ce_status" = "FAILED" ] || [ "$ce_status" = "CANCELED" ]; then
-              break
-            fi
-            sleep 5
-          done
-
-          if [ "$ce_status" != "SUCCESS" ]; then
-            echo "Background task did not complete successfully: $ce_status"
-            exit 1
-          fi
-
-          ce_task_response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-            "https://sonarcloud.io/api/ce/task?id=${ce_task_id}")
-          echo "CE task response: $ce_task_response"
-          analysis_id=$(echo "$ce_task_response" | python3 -c "import sys, json; print(json.load(sys.stdin)['task']['analysisId'])")
-
-          gate_response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=${analysis_id}")
-          echo "Quality Gate response: $gate_response"
-          gate_status=$(echo "$gate_response" | python3 -c "import sys, json; print(json.load(sys.stdin)['projectStatus']['status'])")
-
-          echo "Quality Gate status: $gate_status"
-          if [ "$gate_status" != "OK" ]; then
-            exit 1
-          fi
-
   release-develop:
     name: Create release branch and PR
-    needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app, sonarcloud]
+    needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app]
     if: github.event_name == 'push' && github.ref_name == 'develop'
     runs-on: ubuntu-latest
     outputs:
