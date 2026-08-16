@@ -116,6 +116,7 @@ def list_routes(
 @router.get(
     "/{route_id}",
     responses={
+        400: {"description": "Invalid id format"},
         403: {"description": "Missing authorization header"},
         404: {"description": "Route not found"},
     },
@@ -138,6 +139,7 @@ def get_route(
 @router.delete(
     "/{route_id}",
     responses={
+        400: {"description": "Invalid id format"},
         403: {"description": "Missing authorization header"},
         404: {"description": "Route not found"},
     },

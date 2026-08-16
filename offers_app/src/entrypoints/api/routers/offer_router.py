@@ -97,7 +97,13 @@ def list_offers(
     return [_serialize(o) for o in offers]
 
 
-@router.get("/{offer_id}", responses={404: {"description": "Offer not found"}})
+@router.get(
+    "/{offer_id}",
+    responses={
+        400: {"description": "Invalid id format"},
+        404: {"description": "Offer not found"},
+    },
+)
 def get_offer(
     offer_id: str, use_case: BaseUseCase = Depends(build_get_offer_use_case)
 ):
@@ -110,7 +116,13 @@ def get_offer(
     return _serialize(offer)
 
 
-@router.delete("/{offer_id}", responses={404: {"description": "Offer not found"}})
+@router.delete(
+    "/{offer_id}",
+    responses={
+        400: {"description": "Invalid id format"},
+        404: {"description": "Offer not found"},
+    },
+)
 def delete_offer(
     offer_id: str, use_case: BaseUseCase = Depends(build_delete_offer_use_case)
 ):
