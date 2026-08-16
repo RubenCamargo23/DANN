@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -17,6 +18,13 @@ from entrypoints.api.schemas import PostCreateRequest
 from errors import InvalidExpirationDateError, PostNotFoundError
 
 router = APIRouter(prefix="/posts")
+
+
+def _require_valid_uuid(value: str):
+    try:
+        uuid.UUID(value)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid id format")
 
 
 def _serialize(post: Post) -> dict:
@@ -87,6 +95,7 @@ def get_post(
     post_id: str, use_case: BaseUseCase = Depends(build_get_post_use_case)
 ):
     """Get a post by id."""
+    _require_valid_uuid(post_id)
     try:
         post = use_case.execute(post_id)
     except PostNotFoundError as err:
@@ -99,6 +108,7 @@ def delete_post(
     post_id: str, use_case: BaseUseCase = Depends(build_delete_post_use_case)
 ):
     """Delete a post by id."""
+    _require_valid_uuid(post_id)
     try:
         use_case.execute(post_id)
     except PostNotFoundError as err:

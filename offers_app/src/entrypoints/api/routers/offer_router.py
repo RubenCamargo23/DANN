@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -18,6 +19,13 @@ from entrypoints.api.schemas import OfferCreateRequest
 from errors import OfferNotFoundError
 
 router = APIRouter(prefix="/offers")
+
+
+def _require_valid_uuid(value: str):
+    try:
+        uuid.UUID(value)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid id format")
 
 
 def _serialize(offer: Offer) -> dict:
@@ -67,8 +75,8 @@ def create_offer(
             fragile=payload.fragile,
             offer=payload.offer,
         )
-    except ValidationError as err:
-        raise HTTPException(status_code=412, detail=str(err))
+    except ValidationError:
+        raise HTTPException(status_code=412, detail="Invalid offer data")
 
     created = use_case.execute(offer)
     return {
@@ -94,6 +102,7 @@ def get_offer(
     offer_id: str, use_case: BaseUseCase = Depends(build_get_offer_use_case)
 ):
     """Get an offer by id."""
+    _require_valid_uuid(offer_id)
     try:
         offer = use_case.execute(offer_id)
     except OfferNotFoundError as err:
@@ -106,6 +115,7 @@ def delete_offer(
     offer_id: str, use_case: BaseUseCase = Depends(build_delete_offer_use_case)
 ):
     """Delete an offer by id."""
+    _require_valid_uuid(offer_id)
     try:
         use_case.execute(offer_id)
     except OfferNotFoundError as err:

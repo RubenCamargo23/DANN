@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from adapters.database import session as db_session
 from config import Settings
@@ -6,6 +8,11 @@ from entrypoints.api.routers.offer_router import router as offer_router
 
 app = FastAPI(title=Settings.app_name)
 app.include_router(offer_router)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(status_code=400, content={"detail": exc.errors()})
 
 
 @app.on_event("startup")
