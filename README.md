@@ -16,6 +16,10 @@ Sistema de intermediación (broker) para envío colaborativo de paquetes, aprove
 └── config.yaml       # Configuración del equipo y de las aplicaciones (usado por los pipelines)
 ```
 
+## Flujo de trabajo (GitFlow)
+
+Todo el desarrollo ocurre sobre `develop`. Cada push dispara pruebas unitarias de las 4 aplicaciones; si pasan, se crea automáticamente una rama `release/X.Y.Z`, se abre un PR hacia `main` y se mergea. Al completarse ese merge se crea el tag `vX.Y.Z`, se ejecuta el análisis de SonarCloud sobre `main`, se sincroniza `develop` con los cambios, y se elimina la rama `release/*` temporal.
+
 ## Prerrequisitos
 
 - Docker
