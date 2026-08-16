@@ -58,7 +58,14 @@ def reset_routes(use_case: BaseUseCase = Depends(build_reset_routes_use_case)):
     return {"msg": "Todos los datos fueron eliminados"}
 
 
-@router.post("", status_code=201)
+@router.post(
+    "",
+    status_code=201,
+    responses={
+        403: {"description": "Missing authorization header"},
+        412: {"description": "Invalid dates or flightId already exists"},
+    },
+)
 def create_route(
     payload: RouteCreateRequest,
     authorization: Optional[str] = Header(default=None),
@@ -86,7 +93,7 @@ def create_route(
     return {"id": created.id, "createdAt": created.created_at.isoformat()}
 
 
-@router.get("")
+@router.get("", responses={403: {"description": "Missing authorization header"}})
 def list_routes(
     flight: Optional[str] = None,
     authorization: Optional[str] = Header(default=None),
@@ -98,7 +105,13 @@ def list_routes(
     return [_serialize(r) for r in routes]
 
 
-@router.get("/{route_id}")
+@router.get(
+    "/{route_id}",
+    responses={
+        403: {"description": "Missing authorization header"},
+        404: {"description": "Route not found"},
+    },
+)
 def get_route(
     route_id: str,
     authorization: Optional[str] = Header(default=None),
@@ -113,7 +126,13 @@ def get_route(
     return _serialize(route)
 
 
-@router.delete("/{route_id}")
+@router.delete(
+    "/{route_id}",
+    responses={
+        403: {"description": "Missing authorization header"},
+        404: {"description": "Route not found"},
+    },
+)
 def delete_route(
     route_id: str,
     authorization: Optional[str] = Header(default=None),

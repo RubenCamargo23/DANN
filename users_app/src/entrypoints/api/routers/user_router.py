@@ -42,7 +42,7 @@ def reset_users(use_case: BaseUseCase = Depends(build_reset_users_use_case)):
     return {"msg": "Todos los datos fueron eliminados"}
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, responses={412: {"description": "User already exists"}})
 def create_user(
     payload: UserCreateRequest,
     use_case: BaseUseCase = Depends(build_create_user_use_case),
@@ -63,7 +63,7 @@ def create_user(
     return {"id": created.id, "createdAt": created.created_at.isoformat()}
 
 
-@router.patch("/{user_id}")
+@router.patch("/{user_id}", responses={404: {"description": "User not found"}})
 def update_user(
     user_id: str,
     payload: UserUpdateRequest,
@@ -92,7 +92,7 @@ def update_user(
     return {"msg": "el usuario ha sido actualizado"}
 
 
-@router.post("/auth")
+@router.post("/auth", responses={404: {"description": "Invalid credentials"}})
 def authenticate(
     payload: UserAuthRequest,
     use_case: BaseUseCase = Depends(build_authenticate_user_use_case),
@@ -109,7 +109,13 @@ def authenticate(
     }
 
 
-@router.get("/me")
+@router.get(
+    "/me",
+    responses={
+        401: {"description": "Invalid or expired token"},
+        403: {"description": "Missing authorization header"},
+    },
+)
 def get_me(
     authorization: str = Header(default=None),
     use_case: BaseUseCase = Depends(build_get_authenticated_user_use_case),

@@ -8,44 +8,44 @@ class Settings:
     @classmethod
     @property
     @lru_cache()
-    def app_name(self) -> str:
+    def app_name(cls) -> str:
         return os.getenv("APP_NAME", "Users API")
 
     @classmethod
     @property
     @lru_cache()
-    def log_level(self) -> str:
+    def log_level(cls) -> str:
         return os.getenv("LOG_LEVEL", "DEBUG")
 
     @classmethod
     @property
-    def db_host(self) -> str:
+    def db_host(cls) -> str:
         return os.getenv("DB_HOST", "localhost")
 
     @classmethod
     @property
-    def db_port(self) -> str:
+    def db_port(cls) -> str:
         return os.getenv("DB_PORT", "5432")
 
     @classmethod
     @property
-    def db_user(self) -> str:
+    def db_user(cls) -> str:
         return os.getenv("DB_USER", "postgres")
 
     @classmethod
     @property
-    def db_password(self) -> str:
+    def db_password(cls) -> str:
         return os.getenv("DB_PASSWORD", "postgres")
 
     @classmethod
     @property
-    def db_name(self) -> str:
+    def db_name(cls) -> str:
         return os.getenv("DB_NAME", "users_db")
 
     @classmethod
     @property
-    def database_url(self) -> str:
+    def database_url(cls) -> str:
         return (
-            f"postgresql://{self.db_user}:{self.db_password}"
-            f"@{self.db_host}:{self.db_port}/{self.db_name}"
+            f"postgresql://{cls.db_user}:{cls.db_password}"
+            f"@{cls.db_host}:{cls.db_port}/{cls.db_name}"
         )
