@@ -1,5 +1,5 @@
 name: Flujo de CI
-# Actualice este pipeline si usted decide trabajar en una tecnología diferente a Python.
+# Actualice este pipeline si usted decide trabajar en una tecnología diferente a Python
 
 on:
   push:
