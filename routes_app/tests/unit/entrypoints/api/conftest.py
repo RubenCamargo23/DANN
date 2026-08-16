@@ -10,7 +10,7 @@ from adapters.database.route_repository_adapter import SQLAlchemyRouteRepository
 from entrypoints.api.main import app
 
 
-@pytest.fixture()
+@pytest.fixture
 def client():
     engine = create_engine(
         "sqlite:///:memory:",

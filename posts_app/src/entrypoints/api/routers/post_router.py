@@ -48,7 +48,7 @@ def reset_posts(use_case: BaseUseCase = Depends(build_reset_posts_use_case)):
     return {"msg": "Todos los datos fueron eliminados"}
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, responses={412: {"description": "Invalid expiration date"}})
 def create_post(
     payload: PostCreateRequest,
     use_case: BaseUseCase = Depends(build_create_post_use_case),
@@ -82,7 +82,7 @@ def list_posts(
     return [_serialize(p) for p in posts]
 
 
-@router.get("/{post_id}")
+@router.get("/{post_id}", responses={404: {"description": "Post not found"}})
 def get_post(
     post_id: str, use_case: BaseUseCase = Depends(build_get_post_use_case)
 ):
@@ -94,7 +94,7 @@ def get_post(
     return _serialize(post)
 
 
-@router.delete("/{post_id}")
+@router.delete("/{post_id}", responses={404: {"description": "Post not found"}})
 def delete_post(
     post_id: str, use_case: BaseUseCase = Depends(build_delete_post_use_case)
 ):

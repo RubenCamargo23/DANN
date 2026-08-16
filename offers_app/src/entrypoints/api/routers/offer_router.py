@@ -52,7 +52,7 @@ def reset_offers(use_case: BaseUseCase = Depends(build_reset_offers_use_case)):
     return {"msg": "Todos los datos fueron eliminados"}
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, responses={412: {"description": "Invalid offer data"}})
 def create_offer(
     payload: OfferCreateRequest,
     use_case: BaseUseCase = Depends(build_create_offer_use_case),
@@ -89,7 +89,7 @@ def list_offers(
     return [_serialize(o) for o in offers]
 
 
-@router.get("/{offer_id}")
+@router.get("/{offer_id}", responses={404: {"description": "Offer not found"}})
 def get_offer(
     offer_id: str, use_case: BaseUseCase = Depends(build_get_offer_use_case)
 ):
@@ -101,7 +101,7 @@ def get_offer(
     return _serialize(offer)
 
 
-@router.delete("/{offer_id}")
+@router.delete("/{offer_id}", responses={404: {"description": "Offer not found"}})
 def delete_offer(
     offer_id: str, use_case: BaseUseCase = Depends(build_delete_offer_use_case)
 ):

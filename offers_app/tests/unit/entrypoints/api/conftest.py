@@ -10,7 +10,7 @@ from adapters.database.offer_repository_adapter import SQLAlchemyOfferRepository
 from entrypoints.api.main import app
 
 
-@pytest.fixture()
+@pytest.fixture
 def client():
     engine = create_engine(
         "sqlite:///:memory:",
