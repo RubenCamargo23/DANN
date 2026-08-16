@@ -180,20 +180,15 @@ jobs:
           git checkout -b "${{ steps.next_version.outputs.branch }}"
           git push origin "${{ steps.next_version.outputs.branch }}"
 
-      - name: Open PR to main
-        uses: peter-evans/create-pull-request@v6
-        id: cpr
-        with:
-          token: ${{ secrets.GH_PAT }}
-          branch: ${{ steps.next_version.outputs.branch }}
-          base: main
-          title: "Release ${{ steps.next_version.outputs.version }}"
-          body: |
-            PR automático de GitFlow: `develop` pasó pruebas unitarias y el Quality Gate
-            de SonarCloud, liberando `${{ steps.next_version.outputs.branch }}` hacia `main`.
-
-      - name: Merge PR to main
-        run: gh pr merge --squash --admin "${{ steps.cpr.outputs.pull-request-number }}"
+      - name: Open and merge PR to main
+        run: |
+          pr_url=$(gh pr create \
+            --base main \
+            --head "${{ steps.next_version.outputs.branch }}" \
+            --title "Release ${{ steps.next_version.outputs.version }}" \
+            --body "PR automático de GitFlow: \`develop\` pasó pruebas unitarias, liberando \`${{ steps.next_version.outputs.branch }}\` hacia \`main\`.")
+          echo "PR created: $pr_url"
+          gh pr merge --squash --admin "$pr_url"
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 
