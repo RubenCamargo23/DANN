@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException
@@ -22,6 +23,13 @@ router = APIRouter(prefix="/routes")
 def _require_auth(authorization: Optional[str]):
     if not authorization:
         raise HTTPException(status_code=403, detail="Missing authorization header")
+
+
+def _require_valid_uuid(value: str):
+    try:
+        uuid.UUID(value)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid id format")
 
 
 def _serialize(route: Route) -> dict:
@@ -119,6 +127,7 @@ def get_route(
 ):
     """Get a route by id."""
     _require_auth(authorization)
+    _require_valid_uuid(route_id)
     try:
         route = use_case.execute(route_id)
     except RouteNotFoundError as err:
@@ -140,6 +149,7 @@ def delete_route(
 ):
     """Delete a route by id."""
     _require_auth(authorization)
+    _require_valid_uuid(route_id)
     try:
         use_case.execute(route_id)
     except RouteNotFoundError as err:

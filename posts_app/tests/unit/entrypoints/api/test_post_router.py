@@ -60,8 +60,13 @@ def test_get_post_success(client):
 
 
 def test_get_post_not_found(client):
-    response = client.get("/posts/does-not-exist")
+    response = client.get("/posts/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 404
+
+
+def test_get_post_invalid_id_format(client):
+    response = client.get("/posts/does-not-exist")
+    assert response.status_code == 400
 
 
 def test_delete_post_success(client):
@@ -71,8 +76,13 @@ def test_delete_post_success(client):
 
 
 def test_delete_post_not_found(client):
-    response = client.delete("/posts/does-not-exist")
+    response = client.delete("/posts/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 404
+
+
+def test_delete_post_invalid_id_format(client):
+    response = client.delete("/posts/does-not-exist")
+    assert response.status_code == 400
 
 
 def test_count_posts(client):

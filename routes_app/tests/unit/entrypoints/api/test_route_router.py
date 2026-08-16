@@ -92,8 +92,15 @@ def test_get_route_success(client):
 
 
 def test_get_route_not_found(client):
-    response = client.get("/routes/does-not-exist", headers=AUTH_HEADER)
+    response = client.get(
+        "/routes/00000000-0000-0000-0000-000000000000", headers=AUTH_HEADER
+    )
     assert response.status_code == 404
+
+
+def test_get_route_invalid_id_format(client):
+    response = client.get("/routes/does-not-exist", headers=AUTH_HEADER)
+    assert response.status_code == 400
 
 
 def test_delete_route_success(client):
@@ -103,8 +110,15 @@ def test_delete_route_success(client):
 
 
 def test_delete_route_not_found(client):
-    response = client.delete("/routes/does-not-exist", headers=AUTH_HEADER)
+    response = client.delete(
+        "/routes/00000000-0000-0000-0000-000000000000", headers=AUTH_HEADER
+    )
     assert response.status_code == 404
+
+
+def test_delete_route_invalid_id_format(client):
+    response = client.delete("/routes/does-not-exist", headers=AUTH_HEADER)
+    assert response.status_code == 400
 
 
 def test_count_routes(client):

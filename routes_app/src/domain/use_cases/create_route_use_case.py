@@ -13,6 +13,9 @@ class CreateRouteUseCase(BaseUseCase):
 
     def execute(self, route: Route) -> Route:
         """Create a new route after validating dates and flight uniqueness."""
+        if route.planned_start_date < utcnow():
+            raise InvalidRouteDatesError("Las fechas del trayecto no son válidas")
+
         if route.planned_end_date <= route.planned_start_date:
             raise InvalidRouteDatesError("Las fechas del trayecto no son válidas")
 

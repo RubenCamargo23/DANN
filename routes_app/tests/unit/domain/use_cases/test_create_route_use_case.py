@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 
 from domain.models.route import Route
@@ -33,6 +35,21 @@ def test_create_route_duplicate_flight(mocker, valid_route_data, stored_route):
 def test_create_route_invalid_dates(mocker, valid_route_data):
     data = {**valid_route_data}
     data["planned_end_date"] = data["planned_start_date"]
+    repository = mocker.Mock()
+    route = Route(**data)
+
+    use_case = CreateRouteUseCase(repository)
+
+    with pytest.raises(InvalidRouteDatesError):
+        use_case.execute(route)
+
+    repository.create.assert_not_called()
+
+
+def test_create_route_start_date_in_the_past(mocker, valid_route_data):
+    data = {**valid_route_data}
+    data["planned_start_date"] = datetime.utcnow() - timedelta(days=1)
+    data["planned_end_date"] = datetime.utcnow() + timedelta(days=1)
     repository = mocker.Mock()
     route = Route(**data)
 

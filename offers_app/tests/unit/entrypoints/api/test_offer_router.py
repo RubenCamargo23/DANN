@@ -64,8 +64,13 @@ def test_get_offer_success(client):
 
 
 def test_get_offer_not_found(client):
-    response = client.get("/offers/does-not-exist")
+    response = client.get("/offers/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 404
+
+
+def test_get_offer_invalid_id_format(client):
+    response = client.get("/offers/does-not-exist")
+    assert response.status_code == 400
 
 
 def test_delete_offer_success(client):
@@ -75,8 +80,13 @@ def test_delete_offer_success(client):
 
 
 def test_delete_offer_not_found(client):
-    response = client.delete("/offers/does-not-exist")
+    response = client.delete("/offers/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 404
+
+
+def test_delete_offer_invalid_id_format(client):
+    response = client.delete("/offers/does-not-exist")
+    assert response.status_code == 400
 
 
 def test_count_offers(client):
