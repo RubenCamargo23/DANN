@@ -66,5 +66,6 @@ testpaths = [
   "tests"
 ]
 env = [
-  "LOG_LEVEL = INFO"
+  "LOG_LEVEL = INFO",
+  "DB_PASSWORD = test-password"
 ]
