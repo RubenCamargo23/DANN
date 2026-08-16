@@ -11,6 +11,7 @@ on:
     branches:
       - develop
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,7 +19,7 @@ permissions:
 
 jobs:
   unittest-users_app:
-    if: (github.event_name == 'push' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
+    if: (github.event_name == 'push' && github.ref_name == 'develop') || (github.event_name == 'workflow_dispatch' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify users_app
     strategy:
@@ -37,7 +38,7 @@ jobs:
         run: make unittest DIR=users_app
 
   unittest-routes_app:
-    if: (github.event_name == 'push' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
+    if: (github.event_name == 'push' && github.ref_name == 'develop') || (github.event_name == 'workflow_dispatch' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify routes_app
     strategy:
@@ -56,7 +57,7 @@ jobs:
         run: make unittest DIR=routes_app
 
   unittest-posts_app:
-    if: (github.event_name == 'push' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
+    if: (github.event_name == 'push' && github.ref_name == 'develop') || (github.event_name == 'workflow_dispatch' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify posts_app
     strategy:
@@ -75,7 +76,7 @@ jobs:
         run: make unittest DIR=posts_app
 
   unittest-offers_app:
-    if: (github.event_name == 'push' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
+    if: (github.event_name == 'push' && github.ref_name == 'develop') || (github.event_name == 'workflow_dispatch' && github.ref_name == 'develop') || github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     name: Verify offers_app
     strategy:
@@ -96,7 +97,7 @@ jobs:
   release-develop:
     name: Create release branch and PR
     needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app]
-    if: github.event_name == 'push' && github.ref_name == 'develop'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == 'develop'
     runs-on: ubuntu-latest
     outputs:
       release_branch: ${{ steps.next_version.outputs.branch }}
@@ -200,7 +201,7 @@ jobs:
 
   sonarcloud-main:
     name: SonarCloud Analysis (main)
-    if: github.event_name == 'push' && github.ref_name == 'main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
