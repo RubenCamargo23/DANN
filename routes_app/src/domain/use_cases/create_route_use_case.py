@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from clock import utcnow
 from domain.models.route import Route
 from domain.ports.route_repository_port import RouteRepositoryPort
 from domain.use_cases.base_use_case import BaseUseCase
@@ -23,6 +22,6 @@ class CreateRouteUseCase(BaseUseCase):
                 f"Route with flightId {route.flight_id} already exists"
             )
 
-        route.created_at = datetime.utcnow()
+        route.created_at = utcnow()
         route.updated_at = route.created_at
         return self.route_repository.create(route)

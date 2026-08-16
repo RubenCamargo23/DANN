@@ -1,6 +1,6 @@
-from datetime import datetime
 from typing import List, Optional
 
+from clock import utcnow
 from domain.models.post import Post
 from domain.ports.post_repository_port import PostRepositoryPort
 from domain.use_cases.base_use_case import BaseUseCase
@@ -22,7 +22,7 @@ class ListPostsUseCase(BaseUseCase):
         posts = self.post_repository.list(route_id=route_id, owner_id=owner_id)
 
         if expire is not None:
-            now = datetime.utcnow()
+            now = utcnow()
             if expire:
                 posts = [p for p in posts if p.expire_at <= now]
             else:

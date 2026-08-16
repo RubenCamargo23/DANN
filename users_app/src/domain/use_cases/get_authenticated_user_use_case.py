@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from clock import utcnow
 from domain.models.user import User
 from domain.ports.user_repository_port import UserRepositoryPort
 from domain.use_cases.base_use_case import BaseUseCase
@@ -15,6 +14,6 @@ class GetAuthenticatedUserUseCase(BaseUseCase):
     def execute(self, token: str) -> User:
         """Return the user owning the token, if valid and not expired."""
         user = self.user_repository.get_by_token(token)
-        if not user or not user.expire_at or user.expire_at < datetime.utcnow():
+        if not user or not user.expire_at or user.expire_at < utcnow():
             raise InvalidTokenError("Invalid or expired token")
         return user

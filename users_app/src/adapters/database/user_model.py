@@ -1,9 +1,9 @@
 import uuid
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, String
 
 from adapters.database.session import Base
+from clock import utcnow
 
 
 def generate_uuid() -> str:
@@ -26,5 +26,5 @@ class UserModel(Base):
     token = Column(String, nullable=True)
     status = Column(String, nullable=False, default="POR_VERIFICAR")
     expire_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)

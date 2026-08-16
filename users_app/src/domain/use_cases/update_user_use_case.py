@@ -1,6 +1,6 @@
-from datetime import datetime
 from typing import Optional
 
+from clock import utcnow
 from domain.models.user import User
 from domain.ports.user_repository_port import UserRepositoryPort
 from domain.use_cases.base_use_case import BaseUseCase
@@ -34,6 +34,6 @@ class UpdateUserUseCase(BaseUseCase):
             user.full_name = full_name
         if phone_number is not None:
             user.phone_number = phone_number
-        user.updated_at = datetime.utcnow()
+        user.updated_at = utcnow()
 
         return self.user_repository.update(user)

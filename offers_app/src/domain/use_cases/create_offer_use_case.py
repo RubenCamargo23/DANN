@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from clock import utcnow
 from domain.models.offer import Offer
 from domain.ports.offer_repository_port import OfferRepositoryPort
 from domain.use_cases.base_use_case import BaseUseCase
@@ -13,5 +12,5 @@ class CreateOfferUseCase(BaseUseCase):
 
     def execute(self, offer: Offer) -> Offer:
         """Create a new offer."""
-        offer.created_at = datetime.utcnow()
+        offer.created_at = utcnow()
         return self.offer_repository.create(offer)

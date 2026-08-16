@@ -1,9 +1,9 @@
 import uuid
-from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Float, String
 
 from adapters.database.session import Base
+from clock import utcnow
 
 
 def generate_uuid() -> str:
@@ -22,4 +22,4 @@ class OfferModel(Base):
     size = Column(String, nullable=False)
     fragile = Column(Boolean, nullable=False, default=False)
     offer = Column(Float, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)

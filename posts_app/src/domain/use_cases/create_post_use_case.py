@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from clock import utcnow
 from domain.models.post import Post
 from domain.ports.post_repository_port import PostRepositoryPort
 from domain.use_cases.base_use_case import BaseUseCase
@@ -14,8 +13,8 @@ class CreatePostUseCase(BaseUseCase):
 
     def execute(self, post: Post) -> Post:
         """Create a new post after validating the expiration date."""
-        if post.expire_at <= datetime.utcnow():
+        if post.expire_at <= utcnow():
             raise InvalidExpirationDateError("La fecha expiración no es válida")
 
-        post.created_at = datetime.utcnow()
+        post.created_at = utcnow()
         return self.post_repository.create(post)

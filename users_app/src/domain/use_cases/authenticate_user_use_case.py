@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
+from clock import utcnow
 from domain.models.user import User
 from domain.ports.user_repository_port import UserRepositoryPort
 from domain.use_cases.base_use_case import BaseUseCase
@@ -22,5 +23,5 @@ class AuthenticateUserUseCase(BaseUseCase):
             raise InvalidCredentialsError("Invalid username or password")
 
         user.token = generate_token()
-        user.expire_at = datetime.utcnow() + timedelta(minutes=TOKEN_TTL_MINUTES)
+        user.expire_at = utcnow() + timedelta(minutes=TOKEN_TTL_MINUTES)
         return self.user_repository.update(user)

@@ -1,9 +1,9 @@
 import uuid
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Integer, String
 
 from adapters.database.session import Base
+from clock import utcnow
 
 
 def generate_uuid() -> str:
@@ -24,5 +24,5 @@ class RouteModel(Base):
     bag_cost = Column(Integer, nullable=False)
     planned_start_date = Column(DateTime, nullable=False)
     planned_end_date = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)

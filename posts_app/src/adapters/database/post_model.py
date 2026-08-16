@@ -1,9 +1,9 @@
 import uuid
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, String
 
 from adapters.database.session import Base
+from clock import utcnow
 
 
 def generate_uuid() -> str:
@@ -19,4 +19,4 @@ class PostModel(Base):
     route_id = Column(String, nullable=False, index=True)
     user_id = Column(String, nullable=False, index=True)
     expire_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)

@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from clock import utcnow
 from domain.models.user import User, UserStatus
 from domain.ports.user_repository_port import UserRepositoryPort
 from domain.use_cases.base_use_case import BaseUseCase
@@ -27,6 +26,6 @@ class CreateUserUseCase(BaseUseCase):
         user.salt = salt
         user.password = hash_password(user.password, salt)
         user.status = UserStatus.POR_VERIFICAR
-        user.created_at = datetime.utcnow()
+        user.created_at = utcnow()
         user.updated_at = user.created_at
         return self.user_repository.create(user)
