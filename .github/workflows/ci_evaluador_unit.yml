@@ -96,7 +96,7 @@ jobs:
   release-develop:
     name: Create release branch and PR
     needs: [unittest-users_app, unittest-routes_app, unittest-posts_app, unittest-offers_app]
-    if: "github.event_name == 'push' && github.ref_name == 'develop' && !startsWith(github.event.head_commit.message, 'chore: sync develop with main')"
+    if: github.event_name == 'push' && github.ref_name == 'develop'
     runs-on: ubuntu-latest
     outputs:
       release_branch: ${{ steps.next_version.outputs.branch }}
@@ -106,7 +106,19 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
 
+      - name: Skip if develop has no new commits over main
+        id: check_new_commits
+        run: |
+          git fetch origin main
+          if git merge-base --is-ancestor HEAD origin/main; then
+            echo "develop is already merged into main, nothing to release"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Compute next patch version from latest tag
+        if: steps.check_new_commits.outputs.skip == 'false'
         id: next_version
         run: |
           latest_tag=$(git tag --list 'v*' --sort=-v:refname | head -n1)
@@ -123,16 +135,19 @@ jobs:
           echo "branch=release/$next" >> "$GITHUB_OUTPUT"
 
       - name: Configure git as github-actions bot
+        if: steps.check_new_commits.outputs.skip == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create and push release branch
+        if: steps.check_new_commits.outputs.skip == 'false'
         run: |
           git checkout -b "${{ steps.next_version.outputs.branch }}"
           git push origin "${{ steps.next_version.outputs.branch }}"
 
       - name: Open and merge PR to main
+        if: steps.check_new_commits.outputs.skip == 'false'
         run: |
           pr_url=$(gh pr create \
             --base main \
